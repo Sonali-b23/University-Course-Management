@@ -1,0 +1,11 @@
+# Ignore node_modules and build output
+Frontend/node_modules/
+Frontend/build/
+Frontend/.vite/
+
+# Ignore Java target build output
+Backend/target/
+
+# Ignore system files
+.DS_Store
+Thumbs.db
