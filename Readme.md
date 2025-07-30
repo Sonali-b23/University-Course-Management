@@ -29,8 +29,8 @@ A full-stack University Course Management System built with Java Spring Boot for
 
 1. **Clone the repository:**
 
-   git clone https://github.com/YourUsername/your-repo.git
-   cd your-repo
+   git clone https://github.com/Sonali-b23/University-Course-Management.git
+   cd University-Course-Management
 
 2. **Backend:**
 
