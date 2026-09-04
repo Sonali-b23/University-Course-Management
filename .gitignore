@@ -1,10 +1,23 @@
 # Ignore node_modules and build output
+# Note: Vite's build output directory is "dist", not "build" -- the old
+# "Frontend/build/" entry here never matched anything Vite actually
+# produces, so a real `npm run build` output could have been committed by
+# accident.
 Frontend/node_modules/
-Frontend/build/
+Frontend/dist/
 Frontend/.vite/
+Frontend/.env
+Frontend/.env.local
 
 # Ignore Java target build output
 Backend/target/
+# The wrapper *properties* file is committed (that's what mvnw needs to
+# bootstrap itself); the downloaded wrapper jar itself is not.
+Backend/.mvn/wrapper/maven-wrapper.jar
+
+# docker-compose reads a local .env automatically if present -- don't
+# commit one if you create it for real credentials.
+.env
 
 # Ignore system files
 .DS_Store

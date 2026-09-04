@@ -1,56 +1,50 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import Course from "./Course";
-import base_url from "../api/bootapi";
-import axios from "axios";
-import toast, { Toaster } from "react-hot-toast";
+import httpClient from "../api/httpClient";
+import toast from "react-hot-toast";
 
 export default function AllCourses() {
+  const [courses, setCourse] = useState([]);
+  const [loading, setLoading] = useState(true);
+
   useEffect(() => {
     document.title = "All Courses | Project by Tanmay";
-  }, []); // [] only for one-time execution
-
-  // Function to call server
-  const getAllCoursesFromServer = () => {
-    toast.promise(
-      axios.get(`${base_url}/courses`),
-      {
-        loading: "Loading courses...",
-        success: (response) => {
-          console.log(response.data);
-          setCourse(response.data);
-          return "Courses have been loaded!";
-        },
-        error: "Something went wrong!",
-      },
-      {
-        position: "bottom-center", // Toast position
-      }
-    );
-  };
-
-  // Calling loading course function
-  useEffect(() => {
-    getAllCoursesFromServer();
   }, []);
 
-  const [courses, setCourse] = useState([]);
+  useEffect(() => {
+    const getAllCoursesFromServer = () => {
+      toast
+        .promise(httpClient.get(`/courses`), {
+          loading: "Loading courses...",
+          success: (response) => {
+            setCourse(response.data);
+            return "Courses have been loaded!";
+          },
+          error: "Something went wrong!",
+        })
+        .finally(() => setLoading(false));
+    };
+
+    getAllCoursesFromServer();
+  }, []); // one-time load on mount
 
   const updateCourses = (id) => {
-    setCourse(courses.filter((c) => c.id !== id)); // Update course list after deletion
+    setCourse((current) => current.filter((c) => c.id !== id));
   };
 
   return (
     <div>
-      {/* Add the Toaster component for hot-toast */}
-      <Toaster position="bottom-center" reverseOrder={false} />
-
       <h1 style={{ textAlign: "center" }}>All Courses</h1>
       <p style={{ textAlign: "center" }}>List of Courses are as follows:</p>
-      {courses.length > 0
-        ? courses.map((item, index) => (
-            <Course key={item.id} course={item} update={updateCourses} />
-          ))
-        : "No courses"}
+      {loading ? (
+        <p style={{ textAlign: "center" }}>Loading...</p>
+      ) : courses.length > 0 ? (
+        courses.map((item) => (
+          <Course key={item.id} course={item} update={updateCourses} />
+        ))
+      ) : (
+        <p style={{ textAlign: "center" }}>No courses yet -- add one to get started.</p>
+      )}
     </div>
   );
 }
