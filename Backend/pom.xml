@@ -12,7 +12,7 @@
 	<artifactId>SpringBootRestfulWs2</artifactId>
 	<version>1.1</version>
 	<name>SpringBootRestfulWs2</name>
-	<description>SpringBoot Rest Api Learn Code with Durgesh</description>
+	<description>University Course Management System -- REST API</description>
 	<url/>
 	<licenses>
 		<license/>
@@ -37,24 +37,81 @@
 
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-validation</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-security</artifactId>
+		</dependency>
+
+		<!--
+			JWT creation/parsing. Version 0.12.6 is the last known-good jjwt
+			0.12.x release as of when this was written; it could not be
+			verified against Maven Central in the environment that added it
+			(see README's testing section); if the build reports this
+			version unresolvable, check https://github.com/jwtk/jjwt/releases
+			for the current 0.12.x version and bump all three artifacts
+			together (they're always released in lockstep).
+		-->
+		<dependency>
+			<groupId>io.jsonwebtoken</groupId>
+			<artifactId>jjwt-api</artifactId>
+			<version>0.12.6</version>
+		</dependency>
+		<dependency>
+			<groupId>io.jsonwebtoken</groupId>
+			<artifactId>jjwt-impl</artifactId>
+			<version>0.12.6</version>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>io.jsonwebtoken</groupId>
+			<artifactId>jjwt-jackson</artifactId>
+			<version>0.12.6</version>
+			<scope>runtime</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
-		
+
+		<dependency>
+			<groupId>org.springframework.security</groupId>
+			<artifactId>spring-security-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+
 		<!-- https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-data-jpa -->
-<dependency>
-    <groupId>org.springframework.boot</groupId>
-    <artifactId>spring-boot-starter-data-jpa</artifactId>
-    
-</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-jpa</artifactId>
+		</dependency>
 
-<!-- https://mvnrepository.com/artifact/mysql/mysql-connector-java -->
-<dependency>
-    <groupId>mysql</groupId>
-    <artifactId>mysql-connector-java</artifactId>
-    <version>8.0.28</version>
-</dependency>
+		<!--
+			com.mysql:mysql-connector-j is the current MySQL JDBC driver
+			artifact (mysql:mysql-connector-java is the old, unmaintained
+			coordinates). No <version> is pinned here on purpose: Spring
+			Boot's parent BOM (spring-boot-starter-parent above) manages a
+			version known to be compatible with this Spring Boot release;
+			letting it do so is the standard, current-best-practice approach
+			rather than hand-pinning a version that can drift out of sync.
+		-->
+		<dependency>
+			<groupId>com.mysql</groupId>
+			<artifactId>mysql-connector-j</artifactId>
+			<scope>runtime</scope>
+		</dependency>
 
+		<!-- Test-only in-memory database, so the test suite runs without a
+			 real MySQL instance available. -->
+		<dependency>
+			<groupId>com.h2database</groupId>
+			<artifactId>h2</artifactId>
+			<scope>test</scope>
+		</dependency>
 
 	</dependencies>
 
@@ -63,6 +120,26 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+			</plugin>
+
+			<!--
+				net.bytebuddy.experimental=true: Mockito mocks concrete classes
+				(e.g. JwtService) via Byte Buddy bytecode generation, and the
+				Byte Buddy version pulled in by this Spring Boot release's
+				managed Mockito version does not yet recognize very new JDKs
+				(seen failing with "Java 26 is not supported ... officially
+				supports Java 24" on a bleeding-edge local JDK). This flag
+				tells Byte Buddy to proceed anyway on an unrecognized JVM
+				version instead of hard-failing. Safe to remove once the
+				Mockito/Byte Buddy versions Spring Boot manages catch up to
+				your JDK.
+			-->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<configuration>
+					<argLine>-Dnet.bytebuddy.experimental=true</argLine>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>

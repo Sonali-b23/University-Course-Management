@@ -1,6 +1,6 @@
 import { Card, CardBody } from "react-bootstrap";
 
-export default function Header({ name, title }) {
+export default function Header() {
   return (
     <div>
       <Card className="my-2 bg-warning" >

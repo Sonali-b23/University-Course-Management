@@ -1,29 +1,35 @@
 // src/components/Course.js
-import React from "react";
+
 import { Button, Card, CardBody, CardSubtitle, CardText, Container } from "react-bootstrap";
-import { useNavigate } from "react-router-dom";  // Import useNavigate for routing
+import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
-import axios from "axios";
-import base_url from "../api/bootapi";
+import PropTypes from "prop-types";
+import httpClient from "../api/httpClient";
+import { useAuth } from "../context/useAuth";
 
 export default function Course({ course, update }) {
-  const navigate = useNavigate();  // Initialize useNavigate hook
+  const navigate = useNavigate();
+  const { isAdmin } = useAuth();
 
   const deleteCourse = (id) => {
+    if (!window.confirm(`Delete "${course.title}"? This can't be undone.`)) {
+      return;
+    }
+
     toast
-      .promise(axios.delete(`${base_url}/courses/${id}`), {
+      .promise(httpClient.delete(`/courses/${id}`), {
         loading: "Deleting course...",
         success: "Course successfully deleted!",
-        error: "Course not deleted! Server problem.",
+        error: (err) =>
+          err?.response?.data?.message || "Course not deleted! Server problem.",
       })
       .then(() => {
-        update(id); // Update the course list after successful deletion
+        update(id);
       });
   };
 
-  // Navigate to update course page
   const handleUpdate = (id) => {
-    navigate(`/update-course/${id}`); // Navigate to update page with courseId
+    navigate(`/update-course/${id}`);
   };
 
   return (
@@ -31,22 +37,33 @@ export default function Course({ course, update }) {
       <CardBody>
         <CardSubtitle className="font-weight-bold">{course.title}</CardSubtitle>
         <CardText>{course.description}</CardText>
-        <Container className="text-center">
-          <Button
-            variant="danger"
-            onClick={() => deleteCourse(course.id)}
-          >
-            Delete
-          </Button>
-          <Button
-            variant="primary"
-            style={{ marginLeft: 5 }}
-            onClick={() => handleUpdate(course.id)} // Trigger update
-          >
-            Update
-          </Button>
-        </Container>
+        {isAdmin && (
+          <Container className="text-center">
+            <Button
+              variant="danger"
+              onClick={() => deleteCourse(course.id)}
+            >
+              Delete
+            </Button>
+            <Button
+              variant="primary"
+              style={{ marginLeft: 5 }}
+              onClick={() => handleUpdate(course.id)}
+            >
+              Update
+            </Button>
+          </Container>
+        )}
       </CardBody>
     </Card>
   );
 }
+
+Course.propTypes = {
+  course: PropTypes.shape({
+    id: PropTypes.oneOfType([PropTypes.number, PropTypes.string]).isRequired,
+    title: PropTypes.string.isRequired,
+    description: PropTypes.string,
+  }).isRequired,
+  update: PropTypes.func.isRequired,
+};

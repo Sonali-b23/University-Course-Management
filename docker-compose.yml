@@ -1,0 +1,68 @@
+# Brings up the full stack: MySQL, the Spring Boot API, and the React
+# frontend behind nginx. This directly follows up on the "Dockerization for
+# deployment" item already listed as a goal in the README's project status.
+#
+# Quick start:
+#   docker compose up --build
+#   Frontend: http://localhost:5173
+#   Backend:  http://localhost:8082
+#
+# Change the MYSQL_* / DB_* / JWT_SECRET / ADMIN_* values below (or better,
+# put them in a local .env file next to this compose file -- docker compose
+# reads it automatically -- and reference them as ${MYSQL_ROOT_PASSWORD}
+# etc.) before using this anywhere other than your own machine.
+#
+# A default admin account (username/password below) is created
+# automatically on first backend startup -- log in with it, then change
+# the password (there's no change-password endpoint yet, so for now that
+# means updating ADMIN_PASSWORD here and recreating the mysql_data volume,
+# or editing the row directly).
+services:
+  mysql:
+    image: mysql:8.0
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: restdb
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build: ./Backend
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      DB_URL: jdbc:mysql://mysql:3306/restdb
+      DB_USERNAME: root
+      DB_PASSWORD: root
+      CORS_ALLOWED_ORIGIN: http://localhost:5173
+      # Change this to a real random secret before deploying anywhere but
+      # your own machine -- see Backend's application.properties.
+      JWT_SECRET: change-this-to-a-real-random-secret-before-deploying-anywhere-but-your-own-machine
+      ADMIN_USERNAME: admin
+      ADMIN_PASSWORD: admin123
+    ports:
+      - "8082:8082"
+
+  frontend:
+    build:
+      context: ./Frontend
+      args:
+        VITE_API_BASE_URL: http://localhost:8082
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "5173:80"
+
+volumes:
+  mysql_data:
